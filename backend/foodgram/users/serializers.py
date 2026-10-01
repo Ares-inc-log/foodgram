@@ -1,5 +1,5 @@
 from djoser.serializers import UserSerializer, UserCreateSerializer
-from rest_framework.serializers import ModelSerializer, ImageField
+from rest_framework.serializers import ModelSerializer
 from django.contrib.auth import get_user_model
 
 from users.tools import Base64ImageField

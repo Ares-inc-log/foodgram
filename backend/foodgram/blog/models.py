@@ -16,29 +16,29 @@ def generate_short_code():
 
 
 class Ingredient(models.Model):
-    title = models.CharField(_('title'), max_length=50, unique=True)
-    measurement_unit = models.CharField(_('measurement unit'), max_length=50)
+    name = models.CharField(_('name'), max_length=128, unique=True)
+    measurement_unit = models.CharField(_('measurement unit'), max_length=64)
 
     class Meta:
         verbose_name = _('Ingredient')
         verbose_name_plural = _('Ingredients')
-        ordering = ('title',)
+        ordering = ('name',)
 
     def __str__(self):
-        return f'{self.title} ({self.measurement_unit})'
+        return f'{self.name} ({self.measurement_unit})'
 
 
 class Tag(models.Model):
-    title = models.CharField(_('title'), max_length=50, unique=True)
+    name = models.CharField(_('name'), max_length=50, unique=True)
     slug = models.SlugField(_('slug'), max_length=50, unique=True)
 
     class Meta:
         verbose_name = _('Tag')
         verbose_name_plural = _('Tags')
-        ordering = ('title',)
+        ordering = ('name',)
 
     def __str__(self):
-        return self.title
+        return self.name
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -52,12 +52,12 @@ class Recipe(models.Model):
         verbose_name=_('author'),
         on_delete=models.CASCADE
     )
-    title = models.CharField(_('title'), max_length=50)
+    name = models.CharField(_('title'), max_length=50)
     image = models.ImageField(
         _('image'),
-        upload_to='gallery/'
+        upload_to='recipes/'
     )
-    description = models.TextField(_('description'))
+    text = models.TextField(_('description'))
     ingredient = models.ManyToManyField(
         Ingredient,
         verbose_name=_('ingredient'),
@@ -70,10 +70,10 @@ class Recipe(models.Model):
     class Meta:
         verbose_name = _('Recipe')
         verbose_name_plural = _('Recipes')
-        ordering = ('title',)
+        ordering = ('name',)
 
     def __str__(self):
-        return self.title
+        return self.name
 
     @property
     def short_url(self):

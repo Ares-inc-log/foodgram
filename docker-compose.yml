@@ -32,8 +32,8 @@ services:
     command: gunicorn foodgram.wsgi:application --bind 0.0.0.0:8888 --chdir /backend/foodgram/
     volumes:
       - ./backend:/backend/
-      - static:/backend/backend_static/
-      - media:/backend/media/ 
+      - static:/backend/foodgram/static/ 
+      - media:/backend/foodgram/media/ 
     networks:
       - foodgram_network
 
@@ -61,4 +61,4 @@ services:
       - frontend_build:/usr/share/nginx/html/
       - ./docs/:/usr/share/nginx/html/api/docs/
       - static:/var/html/static/
-      - media:/var/html/media/
+      - media:/var/html/media/ 

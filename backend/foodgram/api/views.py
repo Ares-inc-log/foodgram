@@ -5,9 +5,11 @@ from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (
     IsAuthenticated,
-    IsAuthenticatedOrReadOnly
+    IsAuthenticatedOrReadOnly,
+    AllowAny
 )
 from blog.models import (
     Recipe,
@@ -40,15 +42,31 @@ class RecipeViewSet(ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
 
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
 
 class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
+    pagination_class = None
+    permission_classes = (AllowAny,)
+
+    def get_queryset(self):
+        queryset = Ingredient.objects.all()
+        name_param = self.request.query_params.get('name')
+        
+        if name_param:
+            queryset = queryset.filter(name__istartswith=name_param)
+            
+        return queryset
 
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    pagination_class = None
+    permission_classes = (AllowAny,)
 
 
 class CartViewSet(ModelViewSet):

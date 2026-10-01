@@ -1,4 +1,5 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework.serializers import ModelSerializer, PrimaryKeyRelatedField
+from users.tools import Base64ImageField
 from blog.models import (
     Recipe,
     Tag,
@@ -12,24 +13,26 @@ from blog.models import (
 
 
 class RecipeSerializer(ModelSerializer):
+    image = Base64ImageField(required=True)
+    author = PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = Recipe
-        fields = ('__all__')
+        fields = ('id', 'author', 'name', 'image', 'text', 'cooking_time', 'tags', 'ingredient',)
 
 
 class TagSerializer(ModelSerializer):
 
     class Meta:
         model = Tag
-        fields = ('__all__')
+        fields = ('id', 'name', 'slug',)
 
 
 class IngredientSerializer(ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('__all__')
+        fields = ('id', 'name', 'measurement_unit',)
 
 
 class FavoriteSerializer(ModelSerializer):
