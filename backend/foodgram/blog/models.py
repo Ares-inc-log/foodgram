@@ -52,13 +52,13 @@ class Recipe(models.Model):
         verbose_name=_('author'),
         on_delete=models.CASCADE
     )
-    name = models.CharField(_('title'), max_length=50)
+    name = models.CharField(_('name'), max_length=50)
     image = models.ImageField(
         _('image'),
         upload_to='recipes/'
     )
     text = models.TextField(_('description'))
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name=_('ingredient'),
         through='RecipeIngredient',
@@ -102,7 +102,8 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(
         Recipe,
         verbose_name=_('recipe'),
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name='recipe_ingredients'
     )
     ingredient = models.ForeignKey(
         Ingredient,

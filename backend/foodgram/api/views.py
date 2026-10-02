@@ -5,7 +5,6 @@ from rest_framework.decorators import action
 from djoser.views import UserViewSet
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.filters import SearchFilter
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAuthenticatedOrReadOnly,
@@ -16,22 +15,24 @@ from blog.models import (
     Tag,
     Ingredient,
     ShortLink,
-    RecipeIngredient,
     Favorite,
     Cart,
     Subscription
 )
 from blog.serializers import (
-    RecipeSerializer,
+    RecipeReadSerializer,
+    RecipeWriteSerializer,
     TagSerializer,
     IngredientSerializer,
-    RecipeIngredientSerializer,
+    RecipeIngredientWriteSerializer,
     FavoriteSerializer,
     CartSerializer,
     ShortLinkSerializer,
     SubscriptionSerializer
 )
+from api.filters import RecipeFilter
 from users.serializers import AvatarSerializer
+from django_filters.rest_framework import DjangoFilterBackend
 
 
 User = get_user_model()
@@ -39,8 +40,14 @@ User = get_user_model()
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return RecipeReadSerializer
+        return RecipeWriteSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -48,9 +55,9 @@ class RecipeViewSet(ModelViewSet):
 
 class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()
-    serializer_class = IngredientSerializer
     pagination_class = None
     permission_classes = (AllowAny,)
+    serializer_class = IngredientSerializer
 
     def get_queryset(self):
         queryset = Ingredient.objects.all()
@@ -90,11 +97,6 @@ class FavoriteViewSet(ModelViewSet):
     queryset = Favorite.objects.all()
     serializer_class = FavoriteSerializer
     permission_classes = (IsAuthenticated,)
-
-
-class RecipeIngredientViewSet(ModelViewSet):
-    queryset = RecipeIngredient.objects.all()
-    serializer_class = RecipeIngredientSerializer
 
 
 class CustomUserViewSet(UserViewSet):
