@@ -34,8 +34,7 @@ jobs:
             context: ./backend
           - image: foodgram_frontend
             context: ./frontend
-          - image: foodgram_gateway
-            context: ./nginx
+
     steps:
       - uses: actions/checkout@v4
 
@@ -64,9 +63,22 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
-          source: docker-compose.production.yml
+          source: "docker-compose.production.yml,infra/nginx.conf,docs"
           target: foodgram
+
+      - name: Создание .env на сервере
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          ENV_FILE: ${{ secrets.ENV_FILE }}
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          envs: ENV_FILE
+          script: |
+            mkdir -p foodgram
+            printf '%s\n' "$ENV_FILE" > foodgram/.env
+            chmod 600 foodgram/.env
 
       - name: Запуск на сервере
         uses: appleboy/ssh-action@v1.0.3
@@ -74,7 +86,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
             cd foodgram
             docker compose -f docker-compose.production.yml pull
@@ -82,7 +93,6 @@ jobs:
             docker compose -f docker-compose.production.yml exec -T backend python manage.py makemigrations
             docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
             docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --no-input
-            docker compose -f docker-compose.production.yml exec -T backend cp -r /app/collected_static/. /backend_static/static/
             docker image prune -f
 
   send_message:

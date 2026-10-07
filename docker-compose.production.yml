@@ -14,32 +14,29 @@ services:
     image: postgres:15-alpine
     container_name: postgres_db
     restart: always
-    env_file: .env
-    ports:
-      - "5432:5432"
+    env_file: ./backend/foodgram/.env
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
       - foodgram_network
 
   backend:
-    env_file: .env
+    image: haziko/foodgram_backend:latest
+    env_file: ./backend/foodgram/.env
     restart: always
     container_name: foodgram-back
-    build:
-      context: ./backend
-      dockerfile: ./Dockerfile
     command: gunicorn foodgram.wsgi:application --bind 0.0.0.0:8888 --chdir /backend/foodgram/
+    depends_on:
+      - postgres
     volumes:
-      - ./backend:/backend/
-      - static:/backend/foodgram/static/ 
-      - media:/backend/foodgram/media/ 
+      - static:/backend/foodgram/static/
+      - media:/backend/foodgram/media/
     networks:
       - foodgram_network
 
   frontend:
+    image: haziko/foodgram_frontend:latest
     container_name: foodgram-front
-    build: ./frontend
     command: cp -r /app/build/. /frontend_out/
     volumes:
       - frontend_build:/frontend_out
@@ -49,6 +46,7 @@ services:
   nginx:
     container_name: foodgram-proxy
     image: nginx:1.25.4-alpine
+    restart: always
     ports:
       - "80:80"
     networks:
@@ -61,4 +59,4 @@ services:
       - frontend_build:/usr/share/nginx/html/
       - ./docs/:/usr/share/nginx/html/api/docs/
       - static:/var/html/static/
-      - media:/var/html/media/ 
+      - media:/var/html/media/
