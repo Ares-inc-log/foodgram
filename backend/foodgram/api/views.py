@@ -13,14 +13,13 @@ from blog.serializers import (
     RecipeWriteSerializer,
     TagSerializer,
 )
-
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.views import UserViewSet
 from djoser.serializers import ActivationSerializer
+from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -29,8 +28,8 @@ from rest_framework.permissions import (
     IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
 from rest_framework.views import APIView
+from rest_framework.viewsets import ModelViewSet
 from users.serializers import AvatarSerializer
 
 from api.filters import RecipeFilter
