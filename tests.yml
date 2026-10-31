@@ -87,7 +87,7 @@ jobs:
             docker compose -f docker-compose.production.yml up -d --remove-orphans
 
             docker compose -f docker-compose.production.yml exec -T backend python manage.py migrate
-            docker compose -f docker-compose.production.yml exec -T backend python manage.py load_ingredients data/ingredients.json
+            docker compose -f docker-compose.production.yml exec -T backend python manage.py load_ingredients foodgram/data/ingredients.json
             docker compose -f docker-compose.production.yml exec -T backend python manage.py collectstatic --no-input
 
             docker image prune -f
