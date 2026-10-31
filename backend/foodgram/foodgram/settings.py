@@ -40,7 +40,6 @@ MAILERS = {
         "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
         "OPTIONS": {
             "host": os.getenv("EMAIL_HOST"),
-            "port": os.getenv("EMAIL_PORT"),
             "use_tls": True,
             "username": os.getenv("EMAIL_HOST_USER"),
             "password": os.getenv("EMAIL_HOST_PASSWORD"),
