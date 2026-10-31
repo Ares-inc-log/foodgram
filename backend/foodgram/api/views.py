@@ -16,7 +16,7 @@ from blog.serializers import (
 from django.contrib.auth import get_user_model
 from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
@@ -198,7 +198,7 @@ class CustomUserViewSet(UserViewSet):
 
 
 class ActivateUserView(APIView):
-    """Активация аккаунта по ссылке из письма (GET)."""
+    """Активация по ссылке из письма с редиректом на страницу входа."""
 
     permission_classes = [AllowAny]
 
@@ -208,17 +208,12 @@ class ActivateUserView(APIView):
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             user = None
 
-        if user is None or not default_token_generator.check_token(
-            user, token
+        if (
+            user is not None
+            and not user.is_active
+            and default_token_generator.check_token(user, token)
         ):
-            return Response(
-                {"detail": "Ссылка недействительна или устарела"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+            user.is_active = True
+            user.save(update_fields=["is_active"])
 
-        if user.is_active:
-            return Response({"detail": "Аккаунт уже активирован"})
-
-        user.is_active = True
-        user.save(update_fields=["is_active"])
-        return Response({"detail": "Email подтверждён, теперь можно войти"})
+        return HttpResponseRedirect("/signin")
