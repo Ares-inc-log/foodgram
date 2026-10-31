@@ -21,6 +21,6 @@ router.register("ingredients", IngredientViewSet, basename="ingredients")
 urlpatterns = [
     path("api/", include(router.urls)),
     path("auth/", include("djoser.urls.authtoken")),
-    path('api-token-auth/', views.obtain_auth_token),
+    path('api/auth/token/login/', views.obtain_auth_token),
     path("s/<int:pk>/", short_link_redirect, name="short-link"),
 ]
