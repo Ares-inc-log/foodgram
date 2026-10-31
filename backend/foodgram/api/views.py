@@ -13,12 +13,14 @@ from blog.serializers import (
     RecipeWriteSerializer,
     TagSerializer,
 )
+
 from django.contrib.auth import get_user_model
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from djoser.serializers import ActivationSerializer
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import (
@@ -28,6 +30,7 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.views import APIView
 from users.serializers import AvatarSerializer
 
 from api.filters import RecipeFilter
@@ -191,3 +194,22 @@ class CustomUserViewSet(UserViewSet):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class ActivateUserView(APIView):
+    """Активация аккаунта по ссылке из письма (GET)."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request, uid, token):
+        serializer = ActivationSerializer(
+            data={"uid": uid, "token": token},
+            context={"request": request},
+        )
+        # 400 при неверном uid/токене, 403 если аккаунт уже активирован
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.user
+        user.is_active = True
+        user.save(update_fields=["is_active"])
+        return Response({"detail": "Email подтверждён, теперь можно войти"})
