@@ -14,11 +14,13 @@ from blog.serializers import (
     TagSerializer,
 )
 from django.contrib.auth import get_user_model
+from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 from django_filters.rest_framework import DjangoFilterBackend
-from djoser.serializers import ActivationSerializer
 from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
@@ -201,14 +203,22 @@ class ActivateUserView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request, uid, token):
-        serializer = ActivationSerializer(
-            data={"uid": uid, "token": token},
-            context={"request": request},
-        )
-        # 400 при неверном uid/токене, 403 если аккаунт уже активирован
-        serializer.is_valid(raise_exception=True)
+        try:
+            user = User.objects.get(pk=force_str(urlsafe_base64_decode(uid)))
+        except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+            user = None
 
-        user = serializer.user
+        if user is None or not default_token_generator.check_token(
+            user, token
+        ):
+            return Response(
+                {"detail": "Ссылка недействительна или устарела"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        if user.is_active:
+            return Response({"detail": "Аккаунт уже активирован"})
+
         user.is_active = True
         user.save(update_fields=["is_active"])
         return Response({"detail": "Email подтверждён, теперь можно войти"})
