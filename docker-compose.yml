@@ -1,0 +1,64 @@
+networks:
+  foodgram_network:
+    driver: bridge
+
+volumes:
+  static:
+  media:
+  pgdata:
+  frontend_build:
+
+services:
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    restart: always
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - foodgram_network
+
+  backend:
+    env_file: .env
+    restart: always
+    container_name: foodgram-back
+    build:
+      context: ./backend
+      dockerfile: ./Dockerfile
+    command: gunicorn foodgram.wsgi:application --bind 0.0.0.0:8888 --chdir /backend/foodgram/
+    volumes:
+      - ./backend:/backend/
+      - static:/backend/foodgram/static/ 
+      - media:/backend/foodgram/media/ 
+    networks:
+      - foodgram_network
+
+  frontend:
+    container_name: foodgram-front
+    build: ./frontend
+    command: cp -r /app/build/. /frontend_out/
+    volumes:
+      - frontend_build:/frontend_out
+    networks:
+      - foodgram_network
+
+  nginx:
+    container_name: foodgram-proxy
+    image: nginx:1.25.4-alpine
+    ports:
+      - "80:80"
+    networks:
+      - foodgram_network
+    depends_on:
+      - frontend
+      - backend
+    volumes:
+      - ./infra/nginx.conf:/etc/nginx/conf.d/default.conf
+      - frontend_build:/usr/share/nginx/html/
+      - ./docs/:/usr/share/nginx/html/api/docs/
+      - static:/var/html/static/
+      - media:/var/html/media/ 

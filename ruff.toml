@@ -1,0 +1,22 @@
+line-length = 79
+target-version = "py312"
+
+# какие файлы и папки не проверять
+extend-exclude = [
+    "migrations",
+    "venv",
+    ".venv",
+    "env",
+    "frontend",
+    "node_modules",
+]
+
+[lint]
+# E, W: стиль (pycodestyle), F: ошибки (pyflakes), I: порядок импортов
+select = ["E", "F", "W", "I"]
+
+[lint.per-file-ignores]
+# в settings допускаются длинные строки
+"**/settings.py" = ["E501"]
+# в __init__.py допускаются неиспользуемые импорты
+"__init__.py" = ["F401"]
