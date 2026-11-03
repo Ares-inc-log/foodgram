@@ -14,7 +14,7 @@ def generate_short_code():
 
 
 class Ingredient(models.Model):
-    name = models.CharField(_("name"), max_length=128, unique=True)
+    name = models.CharField(_("name"), max_length=500, unique=True)
     measurement_unit = models.CharField(_("measurement unit"), max_length=64)
 
     class Meta:
