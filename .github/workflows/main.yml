@@ -65,7 +65,7 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT}}
-          source: "docker-compose.production.yml,nginx.conf,docs"
+          source: "docker-compose.production.yml,infra,docs"
           target: "foodgram"
 
       - name: Деплой и запуск на сервере
