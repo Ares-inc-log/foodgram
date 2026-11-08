@@ -3,7 +3,7 @@ import json
 
 from django.core.management.base import BaseCommand
 
-from blog.models import Ingredient
+from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
@@ -16,16 +16,16 @@ class Command(BaseCommand):
         path = options["path"]
         ingredients = []
 
-        with open(path, encoding="utf-8") as f:
+        with open(path, encoding="utf-8") as file:
             if path.lower().endswith(".json"):
-                for item in json.load(f):
+                for item in json.load(file):
                     name = " ".join(item["name"].split())
                     unit = item["measurement_unit"].strip()
                     ingredients.append(
                         Ingredient(name=name, measurement_unit=unit)
                     )
             else:
-                for row in csv.reader(f):
+                for row in csv.reader(file):
                     if len(row) < 2:
                         continue
                     name = " ".join(",".join(row[:-1]).split())
@@ -35,6 +35,5 @@ class Command(BaseCommand):
                     )
 
         Ingredient.objects.bulk_create(ingredients, ignore_conflicts=True)
-        self.stdout.write(
-            self.style.SUCCESS(f"Загружено: {len(ingredients)}")
-        )
+        count = len(ingredients)
+        self.stdout.write(self.style.SUCCESS(f"Загружено: {count}"))

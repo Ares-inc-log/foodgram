@@ -4,13 +4,23 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import MaxValueValidator, MinValueValidator
 from unidecode import unidecode
+
+from recipes.constants import SHORT_LINK_ALPHABET, SHORT_LINK_LENGTH
 
 User = get_user_model()
 
 
-def generate_short_code():
-    return secrets.token_urlsafe(4)[:6]
+def generate_short_link():
+    """Возвращает уникальный код для короткой ссылки."""
+    while True:
+        code = "".join(
+            secrets.choice(SHORT_LINK_ALPHABET)
+            for _ in range(SHORT_LINK_LENGTH)
+        )
+        if not Recipe.objects.filter(short_link=code).exists():
+            return code
 
 
 class Ingredient(models.Model):
@@ -57,10 +67,14 @@ class Recipe(models.Model):
         through="RecipeIngredient",
         related_name="recipes",
     )
-    tags = models.ManyToManyField(Tag, related_name="recipes")
-    cooking_time = models.PositiveIntegerField(_("cooking time"), default=5)
+    tags = models.ManyToManyField(Tag, related_name='recipes')
+    cooking_time = models.PositiveIntegerField(_('cooking time'), default=5)
     short_link = models.CharField(
-        _("short link"), max_length=10, unique=True, blank=True, editable=False
+        _('short link'),
+        max_length=SHORT_LINK_LENGTH,
+        unique=True,
+        blank=True,
+        editable=False,
     )
 
     class Meta:
@@ -73,16 +87,8 @@ class Recipe(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.short_link:
-            while True:
-                code = generate_short_code()
-                if not Recipe.objects.filter(short_link=code).exists():
-                    self.short_link = code
-                    break
+            self.short_link = generate_short_link()
         super().save(*args, **kwargs)
-
-    @property
-    def short_url(self):
-        return f"https://yourdomain.com{self.short_link}"
 
 
 class RecipeIngredient(models.Model):
@@ -95,14 +101,26 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredient, verbose_name=_("ingredient"), on_delete=models.CASCADE
     )
-    amount = models.DecimalField(_("amount"), max_digits=10, decimal_places=2)
+    amount = models.DecimalField(
+        _("amount"),
+        max_digits=10,
+        decimal_places=2,
+        validators=[MaxValueValidator(10000),
+        MinValueValidator(1)]
+    )
 
     class Meta:
         verbose_name = _("RecipeIngredient")
         verbose_name_plural = _("RecipeIngredients")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["recipe", "ingredient"],
+                name="unique_recipe_ingredient",
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.ingredient.title} {self.amount}"
+        return f"{self.recipe} - {self.ingredient}"
 
 
 class Favorite(models.Model):
@@ -114,6 +132,8 @@ class Favorite(models.Model):
     )
 
     class Meta:
+        verbose_name = _("Favorite")
+        verbose_name_plural = _("Favorites")
         constraints = [
             models.UniqueConstraint(
                 fields=("user", "recipe"), name="unique_favorite"
@@ -145,7 +165,7 @@ class Subscription(models.Model):
         ordering = ("-created_at",)
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "author"], name="unique_subscription"
+                fields=("user", "author"), name="unique_subscription"
             ),
             models.CheckConstraint(
                 condition=models.Q(user=models.F("author")),

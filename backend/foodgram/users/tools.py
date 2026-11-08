@@ -15,6 +15,7 @@ def normalize_avatar_path(instance, filename):
 
 
 class Base64ImageField(ImageField):
+
     def to_internal_value(self, data):
         if isinstance(data, str) and data.startswith("data:image"):
             header, imgstr = data.split(";base64,")

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.db.models import Count
 
-from blog.models import Ingredient, Recipe, RecipeIngredient, Tag
+from recipes.models import Ingredient, Recipe, RecipeIngredient, Tag
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -38,7 +38,7 @@ class RecipeAdmin(admin.ModelAdmin):
         "name",
     )
     list_filter = ("tags",)
-    inlines = [RecipeIngredientInline]
+    inlines = (RecipeIngredientInline)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)

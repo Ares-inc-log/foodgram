@@ -13,8 +13,7 @@ from users.tools import normalize_avatar_path
 
 class User(AbstractUser):
     username = models.CharField(
-        _("username"), max_length=MAX_LENGTH_USERNAME, unique=True, blank=False
-    )
+        _("username"), max_length=MAX_LENGTH_USERNAME, unique=True,)
     email = models.EmailField(
         _("email address"),
         max_length=MAX_LENGTH_EMAIL,
@@ -36,4 +35,11 @@ class User(AbstractUser):
     )
 
     USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username", "first_name", "last_name"]
+    REQUIRED_FIELDS = ("username", "first_name", "last_name")
+
+    class Meta:
+        verbose_name = _("user")
+        verbose_name_plural = _("users")
+
+    def __str__(self):
+        return self.username

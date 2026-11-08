@@ -1,3 +1,4 @@
+from django.contrib.gis import serializers
 from django.db import transaction
 from rest_framework.serializers import (
     CharField,
@@ -5,10 +6,10 @@ from rest_framework.serializers import (
     PrimaryKeyRelatedField,
     SerializerMethodField,
 )
-from users.serializers import MyUserSerializer
 from users.tools import Base64ImageField
+from api.serializers import AccountSerializer
 
-from blog.models import (
+from recipes.models import (
     Ingredient,
     Recipe,
     RecipeIngredient,
@@ -29,9 +30,6 @@ class TagSerializer(ModelSerializer):
 class RecipeIngredientReadSerializer(ModelSerializer):
     id = PrimaryKeyRelatedField(source="ingredient.id", read_only=True)
     name = PrimaryKeyRelatedField(source="ingredient.name", read_only=True)
-    measurement_unit = PrimaryKeyRelatedField(
-        source="ingredient.measurement_unit", read_only=True
-    )
 
     class Meta:
         model = RecipeIngredient
@@ -41,6 +39,7 @@ class RecipeIngredientReadSerializer(ModelSerializer):
             "measurement_unit",
             "amount",
         )
+        read_only_fields = ("measurement_unit")
 
 
 class RecipeIngredientWriteSerializer(ModelSerializer):
@@ -49,6 +48,16 @@ class RecipeIngredientWriteSerializer(ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ("id", "amount")
+
+    def validate_ingredients(self, value):
+        ids = []
+        for item in value:
+            ids.append(item["id"])
+        if len(ids) != len(set(ids)):
+            raise serializers.ValidationError(
+                "Ингредиенты не должны повторяться."
+            )
+        return value
 
 
 class RecipeWriteSerializer(ModelSerializer):
@@ -70,52 +79,53 @@ class RecipeWriteSerializer(ModelSerializer):
 
     @transaction.atomic
     def create(self, validated_data):
-        tags = validated_data.pop("tags")
-        ingredients_data = validated_data.pop("ingredients")
-
-        recipe = Recipe.objects.create(**validated_data)
-
+        tags = validated_data["tags"]
+        ingredients_data = validated_data["ingredients"]
+        recipe_fields = {
+            key: value
+            for key, value in validated_data.items()
+            if key not in ("tags", "ingredients")
+        }
+        recipe = Recipe.objects.create(**recipe_fields)
         recipe.tags.set(tags)
-
-        recipe_ingredients = [
-            RecipeIngredient(
-                recipe=recipe, ingredient=item["id"], amount=item["amount"]
-            )
-            for item in ingredients_data
-        ]
-        RecipeIngredient.objects.bulk_create(recipe_ingredients)
-
+        self._save_ingredients(recipe, ingredients_data)
         return recipe
 
     @transaction.atomic
     def update(self, instance, validated_data):
-        tags = validated_data.pop("tags", None)
-        ingredients_data = validated_data.pop("ingredients", None)
-
-        instance = super().update(instance, validated_data)
-
+        tags = validated_data.get("tags")
+        ingredients_data = validated_data.get("ingredients")
+        recipe_fields = {
+            key: value
+            for key, value in validated_data.items()
+            if key not in ("tags", "ingredients")
+        }
+        for field, value in recipe_fields.items():
+            setattr(instance, field, value)
+        instance.save()
         if tags is not None:
             instance.tags.set(tags)
-
         if ingredients_data is not None:
-            RecipeIngredient.objects.filter(recipe=instance).delete()
+            instance.recipe_ingredients.all().delete()
+            self._save_ingredients(instance, ingredients_data)
+        return instance
 
-            recipe_ingredients = [
+    def _save_ingredients(self, recipe, ingredients_data):
+        recipe_ingredients = []
+        for item in ingredients_data:
+            recipe_ingredients.append(
                 RecipeIngredient(
-                    recipe=instance,
+                    recipe=recipe,
                     ingredient=item["id"],
                     amount=item["amount"],
                 )
-                for item in ingredients_data
-            ]
-            RecipeIngredient.objects.bulk_create(recipe_ingredients)
-
-        return instance
+            )
+        RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
 
 class RecipeReadSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
-    author = MyUserSerializer(read_only=True)
+    author = AccountSerializer(read_only=True)
     ingredients = RecipeIngredientReadSerializer(
         many=True, source="recipe_ingredients", read_only=True
     )
@@ -172,9 +182,3 @@ class IngredientSerializer(ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ("id", "name", "measurement_unit")
-
-
-class TagSerializer(ModelSerializer):
-    class Meta:
-        model = Tag
-        fields = ("id", "name", "slug")
