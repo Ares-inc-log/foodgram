@@ -1,26 +1,22 @@
 from django.contrib.auth import get_user_model
-from djoser.serializers import UserSerializer
-from rest_framework.serializers import ModelSerializer
-
-from django.contrib.gis import serializers
 from django.db import transaction
+from djoser.serializers import UserSerializer
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingCart,
+    Tag,
+)
+from rest_framework import serializers
 from rest_framework.serializers import (
     CharField,
     ModelSerializer,
     PrimaryKeyRelatedField,
     SerializerMethodField,
 )
-from users.tools import Base64ImageField
-from api.serializers import AccountSerializer
-
-from recipes.models import (
-    Ingredient,
-    Recipe,
-    RecipeIngredient,
-    Tag,
-    ShoppingCart,
-)
-
+from rest_framework.validators import UniqueTogetherValidator
 from users.tools import Base64ImageField
 
 User = get_user_model()
@@ -205,12 +201,6 @@ class IngredientSerializer(ModelSerializer):
     class Meta:
         model = Ingredient
         fields = ("id", "name", "measurement_unit")
-
-
-from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
-
-from recipes.models import Favorite
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

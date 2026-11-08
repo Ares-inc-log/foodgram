@@ -1,3 +1,4 @@
+from api.serializers import AccountSerializer
 from django.contrib.gis import serializers
 from django.db import transaction
 from rest_framework.serializers import (
@@ -7,7 +8,6 @@ from rest_framework.serializers import (
     SerializerMethodField,
 )
 from users.tools import Base64ImageField
-from api.serializers import AccountSerializer
 
 from recipes.models import (
     Ingredient,
