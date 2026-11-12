@@ -25,7 +25,7 @@ User = get_user_model()
 class AccountSerializer(UserSerializer):
     class Meta(UserSerializer.Meta):
         model = User
-        fields = ("username", "email", "first_name", "last_name", "avatar")
+        fields = ("username", "email", "first_name", "last_name", "avatar",)
 
 
 class AvatarSerializer(ModelSerializer):
@@ -33,7 +33,7 @@ class AvatarSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("avatar")
+        fields = ("avatar",)
 
 
 class TagSerializer(ModelSerializer):
