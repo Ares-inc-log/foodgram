@@ -49,6 +49,9 @@ class TagSerializer(ModelSerializer):
 class RecipeIngredientReadSerializer(ModelSerializer):
     id = PrimaryKeyRelatedField(source="ingredient.id", read_only=True)
     name = PrimaryKeyRelatedField(source="ingredient.name", read_only=True)
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = RecipeIngredient
