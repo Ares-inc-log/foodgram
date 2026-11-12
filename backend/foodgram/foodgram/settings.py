@@ -34,6 +34,9 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split()
 
 AUTH_USER_MODEL = "users.User"
 
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+CSRF_TRUSTED_ORIGINS = ['https://foodgram-inc.duckdns.org']
+
 
 MAILERS = {
     "default": {
