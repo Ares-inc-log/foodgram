@@ -38,7 +38,7 @@ class RecipeAdmin(admin.ModelAdmin):
         "name",
     )
     list_filter = ("tags",)
-    inlines = (RecipeIngredientInline)
+    inlines = (RecipeIngredientInline,)
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
