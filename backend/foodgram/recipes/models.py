@@ -105,8 +105,10 @@ class RecipeIngredient(models.Model):
         _("amount"),
         max_digits=10,
         decimal_places=2,
-        validators=[MaxValueValidator(10000),
-        MinValueValidator(1)]
+        validators=[
+            MaxValueValidator(10000),
+            MinValueValidator(1)
+        ]
     )
 
     class Meta:
