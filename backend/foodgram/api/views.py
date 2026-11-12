@@ -183,8 +183,6 @@ class AccountViewSet(UserViewSet):
 
 
 class ActivateUserView(APIView):
-    """Активация по ссылке из письма с редиректом на страницу входа."""
-
     permission_classes = [AllowAny]
 
     def get(self, request, uid, token):
