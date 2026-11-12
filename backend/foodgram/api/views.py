@@ -19,13 +19,13 @@ from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
     IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
 )
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from api.filters import RecipeFilter
+from api.permissions import IsAuthorOrReadOnly
 from api.serializers import (
     AvatarSerializer,
     FavoriteSerializer,
@@ -41,7 +41,7 @@ User = get_user_model()
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
