@@ -58,7 +58,7 @@ class RecipeIngredientReadSerializer(ModelSerializer):
             "measurement_unit",
             "amount",
         )
-        read_only_fields = ("measurement_unit")
+        read_only_fields = ("measurement_unit",)
 
 
 class RecipeIngredientWriteSerializer(ModelSerializer):
@@ -66,7 +66,7 @@ class RecipeIngredientWriteSerializer(ModelSerializer):
 
     class Meta:
         model = RecipeIngredient
-        fields = ("id", "amount")
+        fields = ("id", "amount",)
 
     def validate_ingredients(self, value):
         ids = []
@@ -193,14 +193,14 @@ class RecipeReadSerializer(ModelSerializer):
 class RecipeShortSerializer(ModelSerializer):
     class Meta:
         model = Recipe
-        fields = ("id", "name", "image", "cooking_time")
+        fields = ("id", "name", "image", "cooking_time",)
         read_only_fields = fields
 
 
 class IngredientSerializer(ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ("id", "name", "measurement_unit")
+        fields = ("id", "name", "measurement_unit",)
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
@@ -210,7 +210,7 @@ class FavoriteSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Favorite
-        fields = ("user", "recipe")
+        fields = ("user", "recipe",)
         validators = [
             UniqueTogetherValidator(
                 queryset=Favorite.objects.all(),
@@ -233,11 +233,11 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShoppingCart
-        fields = ("user", "recipe")
+        fields = ("user", "recipe",)
         validators = [
             UniqueTogetherValidator(
                 queryset=ShoppingCart.objects.all(),
-                fields=("user", "recipe"),
+                fields=("user", "recipe",),
                 message="Рецепт уже в списке покупок",
             )
         ]
