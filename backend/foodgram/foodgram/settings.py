@@ -37,6 +37,8 @@ AUTH_USER_MODEL = "users.User"
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 CSRF_TRUSTED_ORIGINS = ['https://foodgram-inc.duckdns.org']
 
+REQUIRE_EMAIL_ACTIVATION = False 
+
 
 MAILERS = {
     "default": {
@@ -119,7 +121,7 @@ DJOSER = {
     "USERNAME_RESET_CONFIRM_URL": "#/username/reset/confirm/{uid}/{token}",
     "ACTIVATION_URL": "api/activate/{uid}/{token}",
     "LOGIN_FIELD": "email",
-    "SEND_ACTIVATION_EMAIL": True,
+    "SEND_ACTIVATION_EMAIL": False,
     "SEND_CONFIRMATION_EMAIL": True,
     "SERIALIZERS": {
         "user": "api.serializers.AccountSerializer",
@@ -169,7 +171,15 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 
-DATABASES = {
+if os.getenv('USE_SQLITE', 'False') == 'True':
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+else:
+    DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
         "NAME": os.getenv("POSTGRES_DB"),

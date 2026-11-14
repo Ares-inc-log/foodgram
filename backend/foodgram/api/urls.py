@@ -17,8 +17,8 @@ router.register("tags", TagViewSet, basename="tags")
 router.register("ingredients", IngredientViewSet, basename="ingredients")
 
 urlpatterns = [
-    path("api/activate/<str:uid>/<str:token>/", ActivateUserView.as_view()),
-    path("api/auth/", include("djoser.urls.authtoken")),
     path("api/", include(router.urls)),
+    path("api/auth/", include("djoser.urls.authtoken")),
+    path("api/activate/<str:uid>/<str:token>/", ActivateUserView.as_view()),
     path("s/<str:short_link>/", redirect_short_link, name="short-link"),
 ]

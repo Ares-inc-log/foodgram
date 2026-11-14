@@ -23,9 +23,10 @@ User = get_user_model()
 
 
 class AccountSerializer(UserSerializer):
+
     class Meta(UserSerializer.Meta):
         model = User
-        fields = ("username", "email", "first_name", "last_name", "avatar",)
+        fields = ("id", "username", "email", "first_name", "last_name", "avatar", "is_subscribed")
 
 
 class AvatarSerializer(ModelSerializer):
@@ -37,6 +38,7 @@ class AvatarSerializer(ModelSerializer):
 
 
 class TagSerializer(ModelSerializer):
+
     class Meta:
         model = Tag
         fields = (
@@ -194,6 +196,7 @@ class RecipeReadSerializer(ModelSerializer):
 
 
 class RecipeShortSerializer(ModelSerializer):
+
     class Meta:
         model = Recipe
         fields = ("id", "name", "image", "cooking_time",)
@@ -201,6 +204,7 @@ class RecipeShortSerializer(ModelSerializer):
 
 
 class IngredientSerializer(ModelSerializer):
+
     class Meta:
         model = Ingredient
         fields = ("id", "name", "measurement_unit",)

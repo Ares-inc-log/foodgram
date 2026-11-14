@@ -22,10 +22,10 @@ from rest_framework.permissions import (
 )
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from api.filters import RecipeFilter
-from api.permissions import IsAuthorOrReadOnly
+from api.permissions import IsAuthorOrReadOnly, IsAuthenticatedOrReadOnly
 from api.serializers import (
     AvatarSerializer,
     FavoriteSerializer,
@@ -138,7 +138,7 @@ def redirect_short_link(request, short_link):
     return redirect(target)
 
 
-class IngredientViewSet(ModelViewSet):
+class IngredientViewSet(ReadOnlyModelViewSet):
     pagination_class = None
     permission_classes = (AllowAny,)
     serializer_class = IngredientSerializer
@@ -153,7 +153,7 @@ class IngredientViewSet(ModelViewSet):
         return queryset
 
 
-class TagViewSet(ModelViewSet):
+class TagViewSet(ReadOnlyModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
@@ -163,9 +163,9 @@ class TagViewSet(ModelViewSet):
 class AccountViewSet(UserViewSet):
     @action(
         detail=False,
-        methods=["put", "delete"],
+        methods=["get", "put", "delete"],
         url_path="me/avatar",
-        permission_classes=[IsAuthenticated],
+        permission_classes=[IsAuthenticatedOrReadOnly],
     )
     def avatar(self, request):
         user = request.user
