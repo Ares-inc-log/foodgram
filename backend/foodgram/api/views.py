@@ -224,7 +224,7 @@ class AccountViewSet(UserViewSet):
     @action(
         detail=True,
         methods=["post", "delete"],
-        permission_classes = (IsAuthorOrReadOnly,)
+        permission_classes=(IsAuthorOrReadOnly,)
     )
     def subscribe(self, request, id=None):
         author = get_object_or_404(User, pk=id)
