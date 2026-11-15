@@ -34,10 +34,10 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split()
 
 AUTH_USER_MODEL = "users.User"
 
-SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-CSRF_TRUSTED_ORIGINS = ['https://foodgram-inc.duckdns.org']
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+CSRF_TRUSTED_ORIGINS = ["https://foodgram-inc.duckdns.org"]
 
-REQUIRE_EMAIL_ACTIVATION = False 
+REQUIRE_EMAIL_ACTIVATION = False
 
 
 MAILERS = {
@@ -108,8 +108,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework.authentication.TokenAuthentication",
     ),
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 6,
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.PageLimitPagination",
     "DEFAULT_FILTER_BACKENDS": [
         "django_filters.rest_framework.DjangoFilterBackend"
     ],
@@ -122,7 +121,8 @@ DJOSER = {
     "ACTIVATION_URL": "api/activate/{uid}/{token}",
     "LOGIN_FIELD": "email",
     "SEND_ACTIVATION_EMAIL": False,
-    "SEND_CONFIRMATION_EMAIL": True,
+    "SEND_CONFIRMATION_EMAIL": False,
+    "HIDE_USERS": False,
     "SERIALIZERS": {
         "user": "api.serializers.AccountSerializer",
         "current_user": "api.serializers.AccountSerializer",

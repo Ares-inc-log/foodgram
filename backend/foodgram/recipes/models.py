@@ -56,7 +56,10 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User, verbose_name=_("author"), on_delete=models.CASCADE
+        User,
+        verbose_name=_("author"),
+        on_delete=models.CASCADE,
+        related_name="recipes"
     )
     name = models.CharField(_("name"), max_length=50)
     image = models.ImageField(_("image"), upload_to="recipes/")
@@ -67,10 +70,10 @@ class Recipe(models.Model):
         through="RecipeIngredient",
         related_name="recipes",
     )
-    tags = models.ManyToManyField(Tag, related_name='recipes')
-    cooking_time = models.PositiveIntegerField(_('cooking time'), default=5)
+    tags = models.ManyToManyField(Tag, related_name="recipes")
+    cooking_time = models.PositiveIntegerField(_("cooking time"), default=5)
     short_link = models.CharField(
-        _('short link'),
+        _("short link"),
         max_length=SHORT_LINK_LENGTH,
         unique=True,
         blank=True,
@@ -99,7 +102,9 @@ class RecipeIngredient(models.Model):
         related_name="recipe_ingredients",
     )
     ingredient = models.ForeignKey(
-        Ingredient, verbose_name=_("ingredient"), on_delete=models.CASCADE
+        Ingredient,
+        verbose_name=_("ingredient"),
+        on_delete=models.CASCADE
     )
     amount = models.DecimalField(
         _("amount"),
@@ -116,7 +121,7 @@ class RecipeIngredient(models.Model):
         verbose_name_plural = _("RecipeIngredients")
         constraints = [
             models.UniqueConstraint(
-                fields=["recipe", "ingredient"],
+                fields=("recipe", "ingredient"),
                 name="unique_recipe_ingredient",
             ),
         ]
@@ -170,7 +175,7 @@ class Subscription(models.Model):
                 fields=("user", "author"), name="unique_subscription"
             ),
             models.CheckConstraint(
-                condition=models.Q(user=models.F("author")),
+                condition=~models.Q(user=models.F("author")),
                 name="prevent_self_subscription",
             ),
         ]
@@ -188,6 +193,8 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
+        verbose_name = _("Shopping Cart")
+        verbose_name_plural = _("Shopping Carts")
         constraints = [
             models.UniqueConstraint(
                 fields=("user", "recipe"), name="unique_shopping_cart"

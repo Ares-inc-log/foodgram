@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from recipes.models import Subscription
 
 from users.models import User
 
@@ -21,3 +22,9 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "username",
     )
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(admin.ModelAdmin):
+    list_display = ("id", "user", "author", "created_at")
+    search_fields = ("user__username", "author__username")
