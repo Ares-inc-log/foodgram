@@ -96,7 +96,7 @@ class RecipeViewSet(ModelViewSet):
             )
 
         deleted, _ = Favorite.objects.filter(
-        user=request.user, recipe=recipe
+            user=request.user, recipe=recipe
         ).delete()
         if not deleted:
             return Response(
@@ -222,10 +222,10 @@ class AccountViewSet(UserViewSet):
         return Response(serializer.data)
 
     @action(
-            detail=True,
-            methods=["post", "delete"],
-            permission_classes = (IsAuthorOrReadOnly,)
-        )
+        detail=True,
+        methods=["post", "delete"],
+        permission_classes = (IsAuthorOrReadOnly,)
+    )
     def subscribe(self, request, id=None):
         author = get_object_or_404(User, pk=id)
 
