@@ -7,8 +7,8 @@ from recipes.models import (
     Recipe,
     RecipeIngredient,
     ShoppingCart,
-    Tag,
     Subscription,
+    Tag,
 )
 from rest_framework import serializers
 from rest_framework.serializers import (
