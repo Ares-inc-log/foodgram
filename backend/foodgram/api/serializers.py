@@ -185,7 +185,7 @@ class RecipeWriteSerializer(ModelSerializer):
                 recipe=recipe,
                 ingredient=item["id"],
                 amount=item["amount"],
-                )
+            )
             for item in ingredients_data
         ]
         RecipeIngredient.objects.bulk_create(recipe_ingredients)
