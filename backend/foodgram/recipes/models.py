@@ -3,6 +3,7 @@ import secrets
 from django.contrib.auth import get_user_model
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+from django.db.models import CheckConstraint, F, Q, UniqueConstraint
 from django.utils.text import slugify
 from django.utils.translation import gettext_lazy as _
 from unidecode import unidecode
@@ -153,30 +154,19 @@ class Favorite(models.Model):
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="subscriptions",
-        verbose_name=_("subscriber"),
+        User, on_delete=models.CASCADE, related_name="subscriptions"
     )
     author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="subscribers",
-        verbose_name=_("author"),
+        User, on_delete=models.CASCADE, related_name="subscribers"
     )
-    created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        verbose_name = _("Subscription")
-        verbose_name_plural = _("Subscriptions")
-        ordering = ("-created_at",)
         constraints = [
-            models.UniqueConstraint(
+            UniqueConstraint(
                 fields=("user", "author"), name="unique_subscription"
             ),
-            models.CheckConstraint(
-                condition=~models.Q(user=models.F("author")),
-                name="prevent_self_subscription",
+            CheckConstraint(
+                condition=~Q(user=F("author")), name="no_self_subscription"
             ),
         ]
 

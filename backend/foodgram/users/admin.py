@@ -26,5 +26,6 @@ class UserAdmin(BaseUserAdmin):
 
 @admin.register(Subscription)
 class SubscriptionAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "author", "created_at")
+    list_display = ("user", "author")
     search_fields = ("user__username", "author__username")
+    list_select_related = ("user", "author")

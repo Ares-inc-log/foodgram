@@ -3,11 +3,9 @@ from rest_framework.routers import DefaultRouter
 
 from api.views import (
     AccountViewSet,
-    ActivateUserView,
     IngredientViewSet,
     RecipeViewSet,
     TagViewSet,
-    redirect_short_link,
 )
 
 router = DefaultRouter()
@@ -20,6 +18,4 @@ router.register("ingredients", IngredientViewSet, basename="ingredients")
 urlpatterns = [
     path("api/", include(router.urls)),
     path("api/auth/", include("djoser.urls.authtoken")),
-    path("api/activate/<str:uid>/<str:token>/", ActivateUserView.as_view()),
-    path("s/<str:short_link>/", redirect_short_link, name="short-link"),
 ]

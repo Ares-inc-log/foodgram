@@ -8,6 +8,7 @@ from recipes.models import (
     RecipeIngredient,
     ShoppingCart,
     Tag,
+    Subscription,
 )
 from rest_framework import serializers
 from rest_framework.serializers import (
@@ -179,28 +180,18 @@ class RecipeWriteSerializer(ModelSerializer):
         return instance
 
     def _save_ingredients(self, recipe, ingredients_data):
-        recipe_ingredients = []
-        for item in ingredients_data:
-            recipe_ingredients.append(
-                RecipeIngredient(
-                    recipe=recipe,
-                    ingredient=item["id"],
-                    amount=item["amount"],
+        recipe_ingredients = [
+            RecipeIngredient(
+                recipe=recipe,
+                ingredient=item["id"],
+                amount=item["amount"],
                 )
-            )
+            for item in ingredients_data
+        ]
         RecipeIngredient.objects.bulk_create(recipe_ingredients)
 
-    def _is_related(self, obj, related_name):
-        request = self.context.get("request")
-        if request is None or request.user.is_anonymous:
-            return False
-        return getattr(obj, related_name).filter(user=request.user).exists()
-
-    def get_is_favorited(self, obj):
-        return self._is_related(obj, "favorites")
-
-    def get_is_in_shopping_cart(self, obj):
-        return self._is_related(obj, "shopping_carts")
+    def to_representation(self, instance):
+        return RecipeReadSerializer(instance, context=self.context).data
 
 
 class RecipeReadSerializer(ModelSerializer):
@@ -229,26 +220,20 @@ class RecipeReadSerializer(ModelSerializer):
             "is_in_shopping_cart",
         )
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation["short-link"] = representation.pop("source_link")
-        return representation
+    def _flag(self, obj, annotated_name, related_name):
+        value = getattr(obj, annotated_name, None)
+        if value is not None:
+            return value
+        request = self.context.get("request")
+        if request is None or request.user.is_anonymous:
+            return False
+        return getattr(obj, related_name).filter(user=request.user).exists()
 
     def get_is_favorited(self, obj):
-        request = self.context.get("request")
-        return bool(
-            request
-            and request.user.is_authenticated
-            and obj.favorites.filter(user=request.user).exists()
-        )
+        return self._flag(obj, "is_favorited", "favorites")
 
     def get_is_in_shopping_cart(self, obj):
-        request = self.context.get("request")
-        return bool(
-            request
-            and request.user.is_authenticated
-            and obj.shopping_carts.filter(user=request.user).exists()
-        )
+        return self._flag(obj, "is_in_shopping_cart", "shopping_carts")
 
 
 class RecipeShortSerializer(ModelSerializer):
@@ -314,12 +299,14 @@ class ShoppingCartSerializer(serializers.ModelSerializer):
 
 class SubscriptionSerializer(AccountSerializer):
     recipes = serializers.SerializerMethodField()
-    recipes_count = serializers.IntegerField(
-        source="recipes.count", read_only=True
-    )
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta(AccountSerializer.Meta):
         fields = AccountSerializer.Meta.fields + ("recipes", "recipes_count")
+
+    def get_recipes_count(self, obj):
+        count = getattr(obj, "recipes_count", None)
+        return count if count is not None else obj.recipes.count()
 
     def get_recipes(self, obj):
         request = self.context.get("request")
@@ -329,4 +316,30 @@ class SubscriptionSerializer(AccountSerializer):
             recipes = recipes[: int(limit)]
         return RecipeShortSerializer(
             recipes, many=True, context=self.context
+        ).data
+
+
+class SubscriptionCreateSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Subscription
+        fields = ("user", "author")
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscription.objects.all(),
+                fields=("user", "author"),
+                message="Вы уже подписаны на этого пользователя.",
+            )
+        ]
+
+    def validate(self, attrs):
+        if attrs["user"] == attrs["author"]:
+            raise serializers.ValidationError(
+                "Нельзя подписаться на самого себя."
+            )
+        return attrs
+
+    def to_representation(self, instance):
+        return SubscriptionSerializer(
+            instance.author, context=self.context
         ).data

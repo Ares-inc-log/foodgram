@@ -33,7 +33,7 @@ class User(AbstractUser):
     avatar = models.ImageField(
         _("avatar"), upload_to=normalize_avatar_path, null=True, blank=True
     )
-    email_confirmed = models.BooleanField(default=False)
+    email_confirmed = models.BooleanField(_("email confirmed"), default=False)
 
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ("username", "first_name", "last_name")
