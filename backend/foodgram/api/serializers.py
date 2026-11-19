@@ -139,7 +139,6 @@ class RecipeWriteSerializer(ModelSerializer):
             raise serializers.ValidationError(
                 {"tags": "Теги не должны повторяться."}
             )
-
         if not cooking_time:
             raise serializers.ValidationError(
                 {"cooking_time": "Время приготовления должно быть указано."}
