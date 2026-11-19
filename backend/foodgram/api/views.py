@@ -139,7 +139,6 @@ class RecipeViewSet(ModelViewSet):
         )
         return response
 
-
     @action(detail=True, methods=["get"], url_path="get-link")
     def get_link(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
